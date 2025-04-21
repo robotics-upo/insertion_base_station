@@ -5,14 +5,18 @@ Paquetes relacionados con la estacion base del proyecto Insertion
 Ejecuta los siguientes comandos para generar el docker y ejecutarlo.
 
 > cd docker
+
 > docker build . -t insertion
 
 
 Para lanzar el docker tienes un script. Primero tienes que generar el directorio $HOME/insertion_shared
 
 > cd ~
+
 > mkdir insertion_shared
+
 > cd insertion_base_station/scripts
+
 > ./run_container.bash
 
 Ya tendrías el contenedor lanzado para ejecutar el rviz, etc.
