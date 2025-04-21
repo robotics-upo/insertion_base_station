@@ -12,7 +12,7 @@ RUN sudo apt update && apt install -y ros-noetic-joy ros-noetic-teleop-twist-joy
     ros-noetic-compressed-image-transport ros-noetic-rqt* ros-noetic-rviz \
     ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers \
     ros-noetic-vision-msgs ros-noetic-costmap-2d ros-noetic-amcl ros-noetic-map-server ros-noetic-urg-node \
-    ros-noetic-aruco ros-noetic-dynamixel-sdk \
+    ros-noetic-aruco ros-noetic-dynamixel-sdk libgeographic-dev \
     ros-noetic-turtlebot3-*
 
 # We also install Git and other tools
