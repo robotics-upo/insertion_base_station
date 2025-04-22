@@ -37,7 +37,7 @@ RUN cd ~/insertion_base_station/scripts && pwd && ./install_insertion.sh
 RUN useradd -ms /bin/bash insertion
 # Sometimes it is good to add a password so that we can use sudo to install things
 # To this end, uncomment the following line, remove extra ### and change the password 
-RUN echo "insertion:insertion" | chpasswd  
+RUN echo "insertion:insertion" | ch####passw####d  
 #### Remove #### to change the password
 RUN adduser insertion sudo & adduser insertion dialout & adduser insertion plugdev & echo Hi
 RUN usermod -aG sudo insertion
