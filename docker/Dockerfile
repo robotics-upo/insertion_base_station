@@ -22,12 +22,12 @@ RUN sudo apt install -y git vim nano iputils-ping net-tools xterm gdb tmuxinator
 RUN sudo apt -y install libgl1-mesa-glx libgl1-mesa-dri
 
 # Create workspace and download files
-RUN cd ~/ && git clone https://github.com/david-alejo/insertion_base_station
+RUN cd ~/ && git clone https://github.com/robotics-upo/insertion_base_station
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/noetic/setup.sh
 RUN cd ~/insertion_base_station/scripts && git pull && ./install_insertion.sh no_git 
-RUN cd ~/insertion_base_station/ && git pull && ~/insertion_base_station/scripts/install_g2o.sh 
-RUN cd ~/insertion_base_station/scripts && pwd && ./install_ceres.sh 
+#RUN cd ~/insertion_base_station/ && git pull && ~/insertion_base_station/scripts/install_g2o.sh 
+#RUN cd ~/insertion_base_station/scripts && pwd && ./install_ceres.sh 
 RUN cd ~/insertion_base_station/scripts && pwd && ./install_insertion.sh 
 
 # By default the DockerFile uses the root as user. 
@@ -37,7 +37,7 @@ RUN cd ~/insertion_base_station/scripts && pwd && ./install_insertion.sh
 RUN useradd -ms /bin/bash insertion
 # Sometimes it is good to add a password so that we can use sudo to install things
 # To this end, uncomment the following line, remove extra ### and change the password 
-RUN echo "insertion:insertion" | ch####passw####d  
+RUN echo "insertion:insertion" | chpasswd  
 #### Remove #### to change the password
 RUN adduser insertion sudo & adduser insertion dialout & adduser insertion plugdev & echo Hi
 RUN usermod -aG sudo insertion
