@@ -1,0 +1,5 @@
+<launch>
+
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share insertion_base_station)/cfg/base_station.rviz"/>
+
+</launch>
