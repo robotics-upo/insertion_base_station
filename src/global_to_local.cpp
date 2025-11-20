@@ -17,7 +17,7 @@ public:
     : Node("global_to_local"),
         origin_set_(false)
     {
-        map_frame_ = this->declare_parameter<std::string>("map_frame", "map");
+        map_frame_ = this->declare_parameter<std::string>("global_frame", "map");
         base_frame_ = this->declare_parameter<std::string>("base_frame", "base_link");
 
         // subscribe to NavSatFix
@@ -26,8 +26,8 @@ public:
             "fix", qos,
             std::bind(&GlobalToLocal::fixCallback, this, std::placeholders::_1));
 
-        sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
-            "gps_position", qos,
+        sub2_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
+            "gps", qos,
             std::bind(&GlobalToLocal::gpsCallback, this, std::placeholders::_1));
 
 
@@ -35,7 +35,7 @@ public:
 
         RCLCPP_INFO(this->get_logger(), "global_to_local node started, publishing transforms %s -> %s",
                                 map_frame_.c_str(), base_frame_.c_str());
-    }
+    } 
 
 private:
     void fixCallback(const sensor_msgs::msg::NavSatFix::SharedPtr msg)
@@ -49,6 +49,7 @@ private:
             lat0_ = msg->latitude;
             lon0_ = msg->longitude;
             alt0_ = msg->altitude;
+            
             local_cart_ = std::make_unique<GeographicLib::LocalCartesian>(lat0_, lon0_, alt0_);
             origin_set_ = true;
             RCLCPP_INFO(this->get_logger(), "Origin set to lat=%f lon=%f alt=%f", lat0_, lon0_, alt0_);
@@ -87,7 +88,7 @@ private:
     }
 
 
-    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr sub_;
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr sub_, sub2_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::unique_ptr<GeographicLib::LocalCartesian> local_cart_;
 
