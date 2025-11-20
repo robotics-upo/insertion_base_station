@@ -18,8 +18,8 @@ class GPSPublisher(Node):
                 super().__init__('gps_publisher')
 
                 # Parameters (can be set via ros2 param set or launch)
-                self.declare_parameter('latitude', 37.7749)   # default: San Francisco
-                self.declare_parameter('longitude', -122.4194)
+                self.declare_parameter('latitude', 39.794259)   # default: San Francisco
+                self.declare_parameter('longitude', -4.081345)
                 self.declare_parameter('altitude', 10.0)
                 self.declare_parameter('frame_id', 'gps')
                 self.declare_parameter('rate', 1.0)  # Hz
