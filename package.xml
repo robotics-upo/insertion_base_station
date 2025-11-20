@@ -11,6 +11,8 @@
   <depend> eliko_driver </depend>
   <depend> rviz_satellite </depend>
   <depend> rviz2 </depend>
+  <depend> sensor_msgs </depend>
+  <depend> rclcpp </depend>
 
   <export>
     <build_type>ament_cmake</build_type>
