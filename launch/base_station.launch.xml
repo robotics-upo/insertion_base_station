@@ -5,7 +5,7 @@
     <node pkg="insertion_base_station" exec="gps_publisher.py" name="takeoff_gps_publisher" output="screen">
         <param name="latitude" value="39.7942581176758"/>
         <param name="longitude" value="-4.08134603500366"/>
-        <param name="altitude" value="20.0"/>
+        <param name="altitude" value="0.0"/>
         <remap from="/gps/fix" to="/takeoff_gps" />
         <param name="publish_rate" value="1.0"/>
     </node>
@@ -16,9 +16,9 @@
     </node>
 
     <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node" output="screen">
-        <param name="fix" value="/takeoff_gps"/>
-        <param name="gps" value="/drone2/gps_position"/>
-        <param name="frame_id" value="drone2/base_link"/>
+        <remap from="/fix" to="/takeoff_gps"/>
+        <remap from="/gps" to="/drone2/dji_sdk/gps_position"/>
+        <param name="base_frame" value="drone2/base_link"/>
     </node>
 
 </launch>
