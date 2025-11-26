@@ -10,15 +10,64 @@
         <param name="publish_rate" value="1.0"/>
     </node>
 
+    <!-- Drone 1 markers and global to local -->
+    <arg name="drone1_ns" default="/drone1"/>
+    <arg name="drone1_frame" default="$(var drone1_ns)/base_link"/>
+
+    <node pkg="upo_markers" exec="marker_node" name="drone1_marker_node" output="screen">
+        <param name="publish_tf" value="true"/>
+        <param name="frame_id" value="$(var drone1_frame)"/>
+    </node>
+
+    <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node_drone1" output="screen">
+        <remap from="/fix" to="/takeoff_gps"/>
+        <remap from="/gps" to="$(var drone1_ns)/dji_sdk/gps_position"/>
+        <param name="base_frame" value="$(var drone1_frame)"/>
+        <param name="z_offset" value="5.0"/>
+    </node>
+
+    <!-- Drone 2 markers and global to local -->
+    <arg name="drone2_ns" default=""/>
+    <arg name="drone2_frame" default="$(var drone2_ns)/base_link"/>
+
     <node pkg="upo_markers" exec="marker_node" name="drone2_marker_node" output="screen">
         <param name="publish_tf" value="true"/>
-        <param name="frame_id" value="drone2/base_link"/>
+        <param name="frame_id" value="$(var drone2_frame)"/>
     </node>
 
     <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node" output="screen">
         <remap from="/fix" to="/takeoff_gps"/>
-        <remap from="/gps" to="/drone2/dji_sdk/gps_position"/>
-        <param name="base_frame" value="drone2/base_link"/>
+        <remap from="/gps" to="$(var drone2_ns)/dji_sdk/gps_position"/>
+        <param name="base_frame" value="$(var drone2_frame)"/>
+        <param name="z_offset" value="5.0"/>
     </node>
+
+
+
+
+    <!-- Boat markers and global to local -->
+    <node pkg="insertion_base_station" exec="global_to_local" name="boat_global_to_local_node" output="screen">
+        <remap from="/fix" to="/takeoff_gps"/>
+        <remap from="/gps" to="/boat_gps"/>
+        <param name="base_frame" value="boat/base_link"/>
+        <param name="use_z" value="false"/>
+    </node>
+
+    <node pkg="upo_markers" exec="marker_node" name="boat_marker_node" output="screen">
+        <param name="publish_tf" value="true"/>
+        <param name="frame_id" value="boat/base_link"/>
+        <param name="model" value="circle"/>
+        <param name="ns" value="boat_marker"/>
+        <param name="radius" value="2.0"/>
+        <param name="r" value="0.0"/>
+        <param name="g" value="1.0"/>
+        <param name="b" value="1.0"/>
+        <param name="a" value="0.8"/>
+        <remap from="/upo_marker" to="/boat_marker"/>
+    </node>
+
+    <!-- Static TF from map to gps -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="boat_static_tf" output="screen"
+        args="0 0 0 0 0 0 map gps"/>
 
 </launch>
