@@ -33,6 +33,15 @@ public:
 
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
+        declare_parameter("use_z", true);
+        get_parameter("use_z", use_z_);
+
+        declare_parameter("relative_z", true);
+        get_parameter("relative_z", relative_z_);
+
+        declare_parameter("z_offset", 0.0);
+        get_parameter("z_offset", z_offset_);
+
         RCLCPP_INFO(this->get_logger(), "global_to_local node started, publishing transforms %s -> %s",
                                 map_frame_.c_str(), base_frame_.c_str());
     } 
@@ -49,6 +58,10 @@ private:
             lat0_ = msg->latitude;
             lon0_ = msg->longitude;
             alt0_ = msg->altitude;
+
+            if (!use_z_) {
+                alt0_ = 0.0;
+            } 
             
             local_cart_ = std::make_unique<GeographicLib::LocalCartesian>(lat0_, lon0_, alt0_);
             origin_set_ = true;
@@ -69,6 +82,19 @@ private:
             double x, y, z;
             // convert global (lat, lon, alt) -> local (x east, y north, z up)
             local_cart_->Forward(msg->latitude, msg->longitude, msg->altitude, x, y, z);
+
+            if (!use_z_) {
+                z = 0.0;
+            } else if (relative_z_) {
+                if (initial_z_ < -1e9) {
+                    initial_z_ = z;
+                    z = 0.0;
+                } else {
+                    z = z - initial_z_;
+                }
+
+            }
+            z += z_offset_;
 
             geometry_msgs::msg::TransformStamped t;
             t.header.stamp = this->now();
@@ -93,9 +119,11 @@ private:
     std::unique_ptr<GeographicLib::LocalCartesian> local_cart_;
 
     bool origin_set_;
-    double lat0_, lon0_, alt0_;
+    double lat0_, lon0_, alt0_, initial_z_ = -1e10;
+    double z_offset_;
     std::string map_frame_;
     std::string base_frame_;
+    bool use_z_, relative_z_;
 };
 
 int main(int argc, char ** argv)
