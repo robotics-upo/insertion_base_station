@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /AerialMap1
-        - /AerialMap1/Status1
         - /AerialMap1/Topic1
         - /PointCloud21
         - /Axes1
@@ -14,6 +13,8 @@ Panels:
         - /Marker1/Topic1
         - /TF1
         - /TF1/Frames1
+        - /Marker2/Topic1
+        - /Marker2/Namespaces1
       Splitter Ratio: 0.5
     Tree Height: 1038
   - Class: rviz_common/Selection
@@ -136,26 +137,63 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
-        drone2/base_link:
+        ARS_548:
+          Value: false
+        All Enabled: false
+        PointCloud:
+          Value: false
+        base_link:
           Value: true
+        boat/base_link:
+          Value: true
+        camera_color_frame:
+          Value: false
+        camera_color_optical_frame:
+          Value: false
+        camera_depth_frame:
+          Value: false
+        camera_depth_optical_frame:
+          Value: false
+        camera_link:
+          Value: false
+        drone_imu:
+          Value: false
+        gps:
+          Value: false
         map:
           Value: true
-      Marker Scale: 5
+      Marker Scale: 2
       Name: TF
       Show Arrows: true
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         map:
-          drone2/base_link:
+          base_link:
+            {}
+          boat/base_link:
+            {}
+          gps:
             {}
       Update Interval: 0
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        "": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /boat_marker
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: map
+    Fixed Frame: gps
     Frame Rate: 30
   Name: root
   Tools:
@@ -198,7 +236,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 28.405200958251953
+      Distance: 68.15015411376953
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -213,10 +251,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8697969913482666
+      Pitch: 0.07979686558246613
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.6554009318351746
+      Yaw: 4.103562831878662
     Saved: ~
 Window Geometry:
   Displays:
