@@ -6,7 +6,8 @@ FROM osrf/ros:foxy-desktop
 #RUN apt install ros-foxy-joy-teleop -y
 #RUN apt install libspdlog-dev libceres-dev -y    
 
-RUN apt-get update && apt-get install -y ros-foxy-teleop-twist-joy libspdlog-dev libceres-dev  ros-foxy-tf2-geometry-msgs geographiclib-tools ros-foxy-geographic-info libgeographic-dev
+RUN apt-get update && apt-get install -y ros-foxy-teleop-twist-joy libspdlog-dev libceres-dev  ros-foxy-tf2-geometry-msgs geographiclib-tools ros-foxy-geographic-info libgeographic-dev 
+RUN apt-get install -y libtclap-dev
 
 # By default the DockerFile uses the root as user. 
 # And then switch to that user
