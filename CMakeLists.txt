@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geographic_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -29,7 +30,7 @@ endif()
 
 
 add_executable(global_to_local src/global_to_local.cpp)
-ament_target_dependencies(global_to_local rclcpp tf2_ros sensor_msgs geographic_msgs)
+ament_target_dependencies(global_to_local rclcpp tf2_ros sensor_msgs geographic_msgs nav_msgs)
 target_link_libraries(global_to_local Geographic )# Necessary to build 
 
 install(TARGETS
@@ -47,9 +48,12 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 
-install(FILES
+install(PROGRAMS
+  scripts/radar_converter.py
+  scripts/camera_fix.py
+  scripts/tf_fixer.py
   scripts/gps_publisher.py
-  DESTINATION lib/${PROJECT_NAME}/
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
