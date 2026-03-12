@@ -1,13 +1,25 @@
 <launch>
 
+    <node pkg="insertion_base_station" exec="radar_converter.py" name="radar_rcs_node" output="screen">
+        <remap from="/radar/PointCloudDetection" to="/radar/PointCloudDetection"/>
+        <remap from="/radar/classified_cloud" to="/radar/classified_cloud"/>
+        <param name="rcs_water_limit" value="-18.0"/> <!-- experimental values -->
+        <param name="rcs_land_limit" value="-6.0"/>  
+        <param name="min_distance_filter" value="3.0"/>
+    </node>
+
+    <node pkg="insertion_base_station" exec="camera_fix.py" name="camera_decoder_node" output="screen"/>
+    <node pkg="insertion_base_station" exec="tf_fixer.py" name="tf_static_transform" output="screen"/>
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="tf_drone_to_radar" args="0 0 0 0 0 0 /drone1/base_link ARS_548" output="screen"/>
+
     <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share insertion_base_station)/cfg/base_station.rviz"/>
 
     <node pkg="insertion_base_station" exec="gps_publisher.py" name="takeoff_gps_publisher" output="screen">
         <param name="latitude" value="39.7942581176758"/>
         <param name="longitude" value="-4.08134603500366"/>
-        <param name="altitude" value="0.0"/>
+        <param name="altitude" value="536.3"/>   <!-- experimental altitude -->
         <remap from="/gps/fix" to="/takeoff_gps" />
-        <param name="publish_rate" value="1.0"/>
+        <param name="publish_rate" value="20.0"/>
     </node>
 
     <!-- Drone 1 markers and global to local -->
@@ -21,9 +33,11 @@
 
     <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node_drone1" output="screen">
         <remap from="/fix" to="/takeoff_gps"/>
-        <remap from="/gps" to="$(var drone1_ns)/dji_sdk/gps_position"/>
+        <remap from="/gps" to="/dji_sdk/gps_position"/>
         <param name="base_frame" value="$(var drone1_frame)"/>
-        <param name="z_offset" value="5.0"/>
+        <param name="path_topic" value="$(var drone1_ns)/path"/>
+        <param name="z_offset" value="5.0"/>     <!-- 0.5 or 5.0 -->
+        <param name="relative_z" value="true"/>
     </node>
 
     <!-- Drone 2 markers and global to local -->
@@ -39,18 +53,19 @@
         <remap from="/fix" to="/takeoff_gps"/>
         <remap from="/gps" to="$(var drone2_ns)/dji_sdk/gps_position"/>
         <param name="base_frame" value="$(var drone2_frame)"/>
+        <param name="path_topic" value="$(var drone2_ns)/path"/>
         <param name="z_offset" value="5.0"/>
+        <param name="relative_z" value="true"/>
     </node>
-
-
-
 
     <!-- Boat markers and global to local -->
     <node pkg="insertion_base_station" exec="global_to_local" name="boat_global_to_local_node" output="screen">
         <remap from="/fix" to="/takeoff_gps"/>
         <remap from="/gps" to="/boat_gps"/>
         <param name="base_frame" value="boat/base_link"/>
+        <param name="path_topic" value="boat/path"/>
         <param name="use_z" value="false"/>
+        <param name="relative_z" value="true"/>
     </node>
 
     <node pkg="upo_markers" exec="marker_node" name="boat_marker_node" output="screen">

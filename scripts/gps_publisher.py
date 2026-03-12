@@ -1,77 +1,93 @@
 #!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix, NavSatStatus
 
-"""
-Simple ROS2 Python node that publishes sensor_msgs/NavSatFix messages.
-Place this file in your package's scripts/ and make it executable:
-    chmod +x gps_publisher.py
-Run with:
-    ros2 run <your_package> gps_publisher.py
-or use ros2 launch / ros2 params to change parameters.
-"""
-
-
 class GPSPublisher(Node):
-        def __init__(self):
-                super().__init__('gps_publisher')
+    """
+    A ROS 2 node that publishes static GPS data (NavSatFix) for testing and simulation.
+    
+    This node acts as a virtual GPS sensor, publishing a fixed coordinate set
+    at a user-defined frequency. It is useful for testing localization stacks
+    without hardware.
+    """
 
-                # Parameters (can be set via ros2 param set or launch)
-                self.declare_parameter('latitude', 39.794259)   # default: San Francisco
-                self.declare_parameter('longitude', -4.081345)
-                self.declare_parameter('altitude', 10.0)
-                self.declare_parameter('frame_id', 'gps')
-                self.declare_parameter('rate', 1.0)  # Hz
-                self.declare_parameter('status', NavSatStatus.STATUS_FIX)
-                self.declare_parameter('service', NavSatStatus.SERVICE_GPS)
+    def __init__(self):
+        super().__init__('gps_publisher')
 
-                self.lat = float(self.get_parameter('latitude').get_parameter_value().double_value)
-                self.lon = float(self.get_parameter('longitude').get_parameter_value().double_value)
-                self.alt = float(self.get_parameter('altitude').get_parameter_value().double_value)
-                self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
-                self.rate = float(self.get_parameter('rate').get_parameter_value().double_value)
-                self.status_val = int(self.get_parameter('status').get_parameter_value().integer_value)
-                self.service_val = int(self.get_parameter('service').get_parameter_value().integer_value)
+        # --- PARAMETER CONFIGURATION ---
+        # Define default values (can be overridden via launch files)
+        self.declare_parameter('latitude', 39.794259)
+        self.declare_parameter('longitude', -4.081345)
+        self.declare_parameter('altitude', 10.0)
+        self.declare_parameter('frame_id', 'gps')
+        self.declare_parameter('rate', 20.0)  # Frequency in Hz
+        self.declare_parameter('status', NavSatStatus.STATUS_FIX)
+        self.declare_parameter('service', NavSatStatus.SERVICE_GPS)
 
-                self.pub = self.create_publisher(NavSatFix, 'gps/fix', 10)
-                timer_period = 1.0 / max(1e-3, self.rate)
-                self.timer = self.create_timer(timer_period, self.timer_callback)
-                self.get_logger().info(f'Publishing NavSatFix to "gps/fix" at {self.rate} Hz')
+        # Retrieve parameter values
+        self.lat = self.get_parameter('latitude').value
+        self.lon = self.get_parameter('longitude').value
+        self.alt = self.get_parameter('altitude').value
+        self.frame_id = self.get_parameter('frame_id').value
+        self.rate = self.get_parameter('rate').value
+        
+        # Cast integer parameters explicitly to ensure type safety
+        self.status_val = int(self.get_parameter('status').value)
+        self.service_val = int(self.get_parameter('service').value)
 
-        def timer_callback(self):
-                msg = NavSatFix()
-                msg.header.stamp = self.get_clock().now().to_msg()
-                msg.header.frame_id = self.frame_id
+        # --- PUBLISHER SETUP ---
+        self.pub = self.create_publisher(NavSatFix, 'gps/fix', 10)
+        
+        # Prevent division by zero if rate is set to 0
+        timer_period = 1.0 / max(1e-3, self.rate)
+        self.timer = self.create_timer(timer_period, self.timer_callback)
 
-                # Status
-                msg.status.status = self.status_val
-                msg.status.service = self.service_val
+        self.get_logger().info(
+            f'GPS Publisher initialized. Broadcasting coordinates ({self.lat}, {self.lon}) '
+            f'at {self.rate} Hz on frame "{self.frame_id}".'
+        )
 
-                # Position
-                msg.latitude = self.lat
-                msg.longitude = self.lon
-                msg.altitude = self.alt
+    def timer_callback(self):
+        """
+        Callback function executed at the defined rate to publish the GPS fix.
+        """
+        msg = NavSatFix()
+        
+        # Timestamp and Frame ID
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = self.frame_id
 
-                # Defaults: unknown covariance
-                msg.position_covariance = [0.0] * 9
-                msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
+        # GPS Status (Fix type and Service)
+        msg.status.status = self.status_val
+        msg.status.service = self.service_val
 
-                self.pub.publish(msg)
+        # Geodetic Position
+        msg.latitude = self.lat
+        msg.longitude = self.lon
+        msg.altitude = self.alt
 
+        # Position Covariance
+        # Defined as a row-major 3x3 matrix. 
+        # COVARIANCE_TYPE_UNKNOWN implies the covariance matrix is empty or invalid.
+        msg.position_covariance = [0.0] * 9
+        msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
+
+        self.pub.publish(msg)
 
 def main(args=None):
-        rclpy.init(args=args)
-        node = GPSPublisher()
-        try:
-                rclpy.spin(node)
-        except KeyboardInterrupt:
-                pass
-        finally:
-                node.get_logger().info('Shutting down gps_publisher')
-                node.destroy_node()
-                rclpy.shutdown()
-
+    rclpy.init(args=args)
+    node = GPSPublisher()
+    
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.get_logger().info('Shutting down GPS Publisher Node.')
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
-        main()
+    main()
