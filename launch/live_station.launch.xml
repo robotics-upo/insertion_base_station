@@ -1,5 +1,4 @@
 <launch>
-
     <!-- PARAMS: GeographicLib Origin -->
     <arg name="origin_lat" default="39.7942581176758"/>
     <arg name="origin_lon" default="-4.08134603500366"/>
@@ -30,7 +29,7 @@
     
     <!-- Tags -->
     <node pkg="insertion_base_station" exec="asset_labels.py" name="asset_labels" output="screen"/>
-
+    
     <!-- RVIZ2 -->
     <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share insertion_base_station)/cfg/base_station.rviz">
         <param name="origin_lat" value="$(var origin_lat)"/>
@@ -49,25 +48,19 @@
     <arg name="drone1_ns" default="/drone1"/>
     <arg name="drone1_frame" default="drone1/base_link"/>
 
-    <node pkg="insertion_base_station" exec="tf_fixer.py" name="tf_fixer_drone1" output="screen">
-        <param name="input_topic" value="/tf_old_drone1"/>
-        <param name="output_topic" value="/tf"/>
-        <param name="prefix" value="drone1/"/>
-    </node>
-
     <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node_drone1" output="screen">
         <remap from="/fix" to="/takeoff_gps"/>
-        <remap from="/gps" to="/dji_sdk/gps_position"/>
-        <param name="attitude_topic" value="/dji_sdk/attitude"/>
+        <remap from="/gps" to="$(var drone1_ns)/dji_sdk/gps_position"/>
+        <param name="attitude_topic" value="$(var drone1_ns)/dji_sdk/attitude"/>
         <param name="base_frame" value="$(var drone1_frame)"/>
         <param name="path_topic" value="$(var drone1_ns)/path"/>
-        <param name="z_offset" value="8.0"/>
+        <param name="z_offset" value="0.5"/>
         <param name="relative_z" value="true"/>
     </node>
 
     <node pkg="insertion_base_station" exec="radar_converter.py" name="radar_rcs_node_drone1" output="screen">
-        <remap from="/radar/PointCloudDetection" to="/drone1/radar/PointCloudDetection"/>
-        <remap from="/radar/classified_cloud" to="/drone1/radar/classified_cloud"/>
+        <remap from="/radar/PointCloudDetection" to="$(var drone1_ns)/radar/PointCloudDetection"/>
+        <remap from="/radar/classified_cloud" to="$(var drone1_ns)/radar/classified_cloud"/>
         <param name="output_frame" value="drone1/ARS_548"/>
         <param name="rcs_water_limit" value="-20.0"/>
         <param name="rcs_land_limit" value="-6.0"/>  
@@ -78,26 +71,20 @@
         args="0 0 0 0 0 0 /drone1/base_link drone1/ARS_548"/>
 
     <node pkg="insertion_base_station" exec="camera_fix.py" name="camera_decoder_drone1" output="screen">
-        <remap from="/camera/color/image_raw/compressed" to="/drone1/camera/color/image_raw/compressed"/>
-        <remap from="/camera/final_image" to="/drone1/camera/final_image"/>
+        <remap from="/camera/color/image_raw/compressed" to="$(var drone1_ns)/camera/color/image_raw/compressed"/>
+        <remap from="/camera/final_image" to="$(var drone1_ns)/camera/final_image"/>
         <param name="output_frame" value="drone1/camera_link"/>
     </node>
 
     <node pkg="upo_markers" exec="marker_node" name="drone1_marker_node" output="screen">
         <param name="publish_tf" value="true"/>
         <param name="frame_id" value="$(var drone1_frame)"/>
-        <remap from="/upo_marker" to="/drone1/marker"/>
+        <remap from="/upo_marker" to="$(var drone1_ns)/marker"/>
     </node>
 
     <!-- DRONE 2 CONFIG -->
     <arg name="drone2_ns" default="/drone2"/>
     <arg name="drone2_frame" default="drone2/base_link"/>
-
-    <node pkg="insertion_base_station" exec="tf_fixer.py" name="tf_fixer_drone2" output="screen">
-        <param name="input_topic" value="/tf_old_drone2"/>
-        <param name="output_topic" value="/tf"/>
-        <param name="prefix" value="drone2/"/>
-    </node>
 
     <node pkg="insertion_base_station" exec="global_to_local" name="global_to_local_node_drone2" output="screen">
         <remap from="/fix" to="/takeoff_gps"/>
@@ -110,8 +97,8 @@
     </node>
 
     <node pkg="insertion_base_station" exec="radar_converter.py" name="radar_rcs_node_drone2" output="screen">
-        <remap from="/radar/PointCloudDetection" to="/drone2/radar/PointCloudDetection"/>
-        <remap from="/radar/classified_cloud" to="/drone2/radar/classified_cloud"/>
+        <remap from="/radar/PointCloudDetection" to="$(var drone2_ns)/radar/PointCloudDetection"/>
+        <remap from="/radar/classified_cloud" to="$(var drone2_ns)/radar/classified_cloud"/>
         <param name="output_frame" value="drone2/ARS_548"/>
         <param name="rcs_water_limit" value="-20.0"/>
         <param name="rcs_land_limit" value="-6.0"/>  
@@ -122,15 +109,15 @@
         args="0 0 0 0 0 0 /drone2/base_link drone2/ARS_548"/>
 
     <node pkg="insertion_base_station" exec="camera_fix.py" name="camera_decoder_drone2" output="screen">
-        <remap from="/camera/color/image_raw/compressed" to="/drone2/camera/color/image_raw/compressed"/>
-        <remap from="/camera/final_image" to="/drone2/camera/final_image"/>
+        <remap from="/camera/color/image_raw/compressed" to="$(var drone2_ns)/camera/color/image_raw/compressed"/>
+        <remap from="/camera/final_image" to="$(var drone2_ns)/camera/final_image"/>
         <param name="output_frame" value="drone2/camera_link"/>
     </node>
 
     <node pkg="upo_markers" exec="marker_node" name="drone2_marker_node" output="screen">
         <param name="publish_tf" value="true"/>
         <param name="frame_id" value="$(var drone2_frame)"/>
-        <remap from="/upo_marker" to="/drone2/marker"/> 
+        <remap from="/upo_marker" to="$(var drone2_ns)/marker"/> 
     </node>
 
     <!-- BOAT CONFIG -->

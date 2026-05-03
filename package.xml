@@ -2,20 +2,34 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>insertion_base_station</name>
-  <version>0.0.0</version>
-  <description> Launch files and more code for the Insertion Base Station </description>
+  <version>0.0.1</version>
+  <description>Launch files and RViz plugins for the Insertion Base Station</description>
   <maintainer email="dalejo@us.es">David Alejo</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend> eliko_driver </depend>
-  <depend> rviz_satellite </depend>
-  <depend> rviz2 </depend>
-  <depend> sensor_msgs </depend>
-  <depend> rclcpp </depend>
-  <depend> nav_msgs </depend>
 
-  <export>
+  <depend>rclcpp</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz2</depend>
+  
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <depend>interactive_markers</depend>
+  
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <depend>eliko_driver</depend>
+  <depend>rviz_satellite</depend>
+  <depend>libgeographic-dev</depend>
+  <depend>qtbase5-dev</depend> <export>
     <build_type>ament_cmake</build_type>
+    <rviz_common plugin="${prefix}/plugin_description.xml"/>
   </export>
 </package>
