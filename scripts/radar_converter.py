@@ -27,18 +27,22 @@ class RadarVisualizer(Node):
         
         # Gradient Configuration (RCS in dB)
         # Values below 'water_limit' are pure Blue. Values above 'land_limit' are pure Green.
-        self.declare_parameter('rcs_water_limit', -18.0)
+        self.declare_parameter('rcs_water_limit', -20.0)
         self.declare_parameter('rcs_land_limit', -6.0)
         
         # Near-field Clutter Filter (Blind Zone)
         # Points closer than 'min_distance_filter' (meters) are forced to be visualized as water.
         # This suppresses the strong reflection from the water surface directly under the drone.
-        self.declare_parameter('min_distance_filter', 4.0) 
+        self.declare_parameter('min_distance_filter', 3.0) 
+
+        self.declare_parameter('output_frame', 'ARS_548')
 
         # Retrieve and store values for performance
         self.min_db = self.get_parameter('rcs_water_limit').value
         self.max_db = self.get_parameter('rcs_land_limit').value
         self.min_dist = self.get_parameter('min_distance_filter').value
+
+        self.output_frame = self.get_parameter('output_frame').value
         
         # --- LOGGING CONFIGURATION ---
         self.get_logger().info("--------------------------------------------------")
@@ -101,7 +105,7 @@ class RadarVisualizer(Node):
             # Override timestamp to current system time. 
             # Necessary for visualizing recorded bags with latency without TF errors.
             new_msg.header.stamp = self.get_clock().now().to_msg()
-            new_msg.header.frame_id = "ARS_548" 
+            new_msg.header.frame_id = self.output_frame
             
             # --- 2. POINT CLOUD STRUCTURE ---
             new_msg.height = msg.height

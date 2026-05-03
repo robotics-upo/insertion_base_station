@@ -18,6 +18,10 @@ class CameraDecompressor(Node):
     def __init__(self):
         super().__init__('camera_decompressor')
         
+        # Declare a parameter for the output frame ID
+        self.declare_parameter('output_frame', 'camera_link')
+        self.output_frame = self.get_parameter('output_frame').value
+
         # QoS configuration optimized for high-throughput sensor data (Best Effort)
         qos_profile = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
 
@@ -55,7 +59,8 @@ class CameraDecompressor(Node):
             # Retain the original timestamp for synchronization but enforce the Frame ID.
             # This ensures compatibility with the TF tree in RViz.
             img_msg.header = msg.header
-            img_msg.header.frame_id = "camera_link" 
+            img_msg.header.stamp = self.get_clock().now().to_msg()
+            img_msg.header.frame_id = self.output_frame 
             
             self.pub.publish(img_msg)
 

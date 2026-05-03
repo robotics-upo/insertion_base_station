@@ -1,0 +1,29 @@
+<class_libraries>
+  <library path="insertion_base_station_panels">
+  
+    <class name="insertion_base_station/MissionPanel"
+           type="insertion_base_station::MissionPanel"
+           base_class_type="rviz_common::Panel">
+      <description>Panel for drone mission execution and waypoint management.</description>
+    </class>
+
+    <class name="insertion_base_station/BatteryPanel"
+           type="insertion_base_station::BatteryPanel"
+           base_class_type="rviz_common::Panel">
+      <description>Battery and telemetry display for the drones.</description>
+    </class>
+
+    <class name="insertion_base_station/FlightPanel"
+           type="insertion_base_station::FlightPanel"
+           base_class_type="rviz_common::Panel">
+      <description>Flight HUD with artificial horizon, altitude, and compass.</description>
+    </class>
+
+    <class name="insertion_base_station/LayerPanel"
+           type="insertion_base_station::LayerPanel"
+           base_class_type="rviz_common::Panel">
+      <description>Control panel for RViz display layer visibility.</description>
+    </class>
+
+  </library>
+</class_libraries>
