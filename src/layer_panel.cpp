@@ -34,7 +34,7 @@ LayerPanel::LayerPanel(QWidget* parent) : rviz_common::Panel(parent) {
     layout->addWidget(cb_tfs_);
 
     cb_interactive_ = new QCheckBox("Edit Waypoints (Unlock)");
-    cb_interactive_->setChecked(true); 
+    cb_interactive_->setChecked(false); 
     layout->addWidget(cb_interactive_);
     
     layout->addStretch(); // Pushes UI elements to the top
@@ -57,6 +57,7 @@ void LayerPanel::onInitialize() {
     onPathsToggled(cb_paths_->isChecked());
     onTFsToggled(cb_tfs_->isChecked());
     onLabelsToggled(cb_labels_->isChecked());
+    onInteractiveToggled(cb_interactive_->isChecked());
 }
 
 // ==========================================

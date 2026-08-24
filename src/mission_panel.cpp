@@ -117,6 +117,7 @@ QWidget* MissionPanel::createDroneControlWidget(int drone_id) {
     connect(down_wp_btn, &QPushButton::clicked, this, &MissionPanel::onMoveWpDownClicked);
     connect(save_wp_btn, &QPushButton::clicked, this, &MissionPanel::onSaveWpClicked);
 
+connect(drone_ui_map_[drone_id].wp_table, &QTableWidget::itemChanged, [this, drone_id](QTableWidgetItem*) {drawMission(drone_id);});
     return widget;
 }
 
@@ -219,9 +220,11 @@ void MissionPanel::onAddWpClicked() {
     table->setCellWidget(row, 0, action_combo);
     
     // Fill coordinates
+    table->blockSignals(true);
     table->setItem(row, 1, new QTableWidgetItem(QString::number(origin_lat_, 'f', 6)));
     table->setItem(row, 2, new QTableWidgetItem(QString::number(origin_lon_, 'f', 6)));
     table->setItem(row, 3, new QTableWidgetItem(QString::number(default_flight_alt_,'f', 1)));
+    table->blockSignals(false);
 
     // Automatically redraw
     drawMission(drone_id);
@@ -251,6 +254,8 @@ void MissionPanel::onUploadClicked() {
     
     drone_ui_map_[drone_id].file_display->setText(filename);
     QTableWidget* table = drone_ui_map_[drone_id].wp_table;
+
+    table->blockSignals(true);
     table->setRowCount(0);
 
     std::ifstream file(filename.toStdString());
@@ -286,7 +291,7 @@ void MissionPanel::onUploadClicked() {
             continue; 
         }
     }
-
+    table->blockSignals(false);
     drawMission(drone_id);
 }
 
@@ -297,13 +302,30 @@ void MissionPanel::drawMission(int drone_id) {
     std::string mission_ns = "mission_drone_" + std::to_string(drone_id);
 
     // 1. Clear previous RViz markers
-    visualization_msgs::msg::Marker clear_mission;
-    clear_mission.header.frame_id = "map";
-    clear_mission.ns = mission_ns;
-    clear_mission.action = visualization_msgs::msg::Marker::DELETEALL;
-    
     visualization_msgs::msg::MarkerArray clear_array;
-    clear_array.markers.push_back(clear_mission);
+
+    visualization_msgs::msg::Marker clear_path;
+    clear_path.header.frame_id = "map";
+    clear_path.ns = mission_ns;
+    clear_path.id = 9999;
+    clear_path.action = visualization_msgs::msg::Marker::DELETE;
+    clear_array.markers.push_back(clear_path);
+
+    for (int i = 0; i < 100; ++i) {
+        visualization_msgs::msg::Marker clear_marker;
+        clear_marker.header.frame_id = "map";
+        clear_marker.ns = mission_ns;
+        clear_marker.action = visualization_msgs::msg::Marker::DELETE;
+
+        clear_marker.id = i;
+        clear_array.markers.push_back(clear_marker);
+
+        clear_marker.id = i + 1000;
+        clear_array.markers.push_back(clear_marker);
+
+        clear_marker.id = i + 2000;
+        clear_array.markers.push_back(clear_marker);
+    }
     marker_array_pub_->publish(clear_array);
 
     for (int i = 0; i < 100; ++i) { 
@@ -520,20 +542,40 @@ void MissionPanel::onClearClicked() {
     drone_ui_map_[drone_id].error_label->hide();
 
     std::string mission_ns = "mission_drone_" + std::to_string(drone_id);
-    
+
     // Clear mission using the MarkerArray
-    visualization_msgs::msg::Marker clear_msg;
-    clear_msg.header.frame_id = "map";
-    clear_msg.ns = mission_ns;
-    clear_msg.action = visualization_msgs::msg::Marker::DELETEALL;
-    
     visualization_msgs::msg::MarkerArray clear_array;
-    clear_array.markers.push_back(clear_msg);
+    visualization_msgs::msg::Marker clear_path;
+    clear_path.header.frame_id = "map";
+    clear_path.ns = mission_ns;
+    clear_path.id = 9999;
+    clear_path.action = visualization_msgs::msg::Marker::DELETE;
+    clear_array.markers.push_back(clear_path);
+
+    for (int i = 0; i < 100; ++i) {
+        visualization_msgs::msg::Marker clear_marker;
+        clear_marker.header.frame_id = "map";
+        clear_marker.ns = mission_ns;
+        clear_marker.action = visualization_msgs::msg::Marker::DELETE;
+
+        clear_marker.id = i;         clear_array.markers.push_back(clear_marker);
+        clear_marker.id = i + 1000;  clear_array.markers.push_back(clear_marker);
+        clear_marker.id = i + 2000;  clear_array.markers.push_back(clear_marker);
+    }
     marker_array_pub_->publish(clear_array);
 
-    // Clear the RTH point as well
-    clear_msg.ns = "rth_target_" + std::to_string(drone_id);
-    marker_pub_->publish(clear_msg);
+    visualization_msgs::msg::Marker clear_rth;
+    clear_rth.header.frame_id = "map";
+    clear_rth.ns = "rth_target_" + std::to_string(drone_id);
+    clear_rth.action = visualization_msgs::msg::Marker::DELETE;
+    
+    clear_rth.id = 0; marker_pub_->publish(clear_rth);
+    clear_rth.id = 1; marker_pub_->publish(clear_rth);
+
+    for (int i = 0; i < 100; ++i) {
+        interactive_server_->erase("wp_" + std::to_string(drone_id) + "_" + std::to_string(i));
+    }
+    interactive_server_->applyChanges();
 
     RCLCPP_WARN(rclcpp::get_logger("mission"), "Drone %d: UI & RViz cleared by operator.", drone_id);
 }
@@ -596,14 +638,31 @@ void MissionPanel::onRTHClicked() {
     drone_ui_map_[drone_id].error_label->hide();
 
     std::string mission_ns = "mission_drone_" + std::to_string(drone_id);
-    visualization_msgs::msg::Marker clear_mission_msg;
-    clear_mission_msg.header.frame_id = "map";
-    clear_mission_msg.ns = mission_ns;
-    clear_mission_msg.action = visualization_msgs::msg::Marker::DELETEALL;
-    
+
     visualization_msgs::msg::MarkerArray clear_mission_array;
-    clear_mission_array.markers.push_back(clear_mission_msg);
+    visualization_msgs::msg::Marker clear_path;
+    clear_path.header.frame_id = "map";
+    clear_path.ns = mission_ns;
+    clear_path.id = 9999;
+    clear_path.action = visualization_msgs::msg::Marker::DELETE;
+    clear_mission_array.markers.push_back(clear_path);
+
+    for (int i = 0; i < 100; ++i) {
+        visualization_msgs::msg::Marker clear_marker;
+        clear_marker.header.frame_id = "map";
+        clear_marker.ns = mission_ns;
+        clear_marker.action = visualization_msgs::msg::Marker::DELETE;
+
+        clear_marker.id = i;         clear_mission_array.markers.push_back(clear_marker);
+        clear_marker.id = i + 1000;  clear_mission_array.markers.push_back(clear_marker);
+        clear_marker.id = i + 2000;  clear_mission_array.markers.push_back(clear_marker);
+    }
     marker_array_pub_->publish(clear_mission_array);
+
+    for (int i = 0; i < 100; ++i) {
+        interactive_server_->erase("wp_" + std::to_string(drone_id) + "_" + std::to_string(i));
+    }
+    interactive_server_->applyChanges();
 
     // 4. Calculate local coordinates for origin
     GeographicLib::LocalCartesian geo_converter(origin_lat_, origin_lon_, origin_alt_);
@@ -765,6 +824,7 @@ void MissionPanel::onMoveWpDownClicked() {
 
 void MissionPanel::swapRows(int row1, int row2, int drone_id) {
     QTableWidget* table = drone_ui_map_[drone_id].wp_table;
+    table->blockSignals(true);
 
     // 1. Swap the QComboBox (Action) values
     QComboBox* combo1 = qobject_cast<QComboBox*>(table->cellWidget(row1, 0));
@@ -783,6 +843,7 @@ void MissionPanel::swapRows(int row1, int row2, int drone_id) {
         table->setItem(row1, col, item2);
         table->setItem(row2, col, item1);
     }
+    table->blockSignals(false);
 }
 
 // ==========================================
@@ -906,9 +967,11 @@ void MissionPanel::processMarkerFeedback(const visualization_msgs::msg::Interact
                 QTableWidget* table = drone_ui_map_[drone_id].wp_table;
                 if (wp_index < table->rowCount()) {
                     // Update the table with new coordinates
+                    table->blockSignals(true);
                     table->item(wp_index, 1)->setText(QString::number(lat, 'f', 6));
                     table->item(wp_index, 2)->setText(QString::number(lon, 'f', 6));
-                    
+                    table->blockSignals(false);
+
                     drawMission(drone_id);
                 }
             });
@@ -944,9 +1007,11 @@ void MissionPanel::addPointFromClick(double lat, double lon, double alt) {
     
     table->setCellWidget(row, 0, action_combo);
 
+    table->blockSignals(true);
     table->setItem(row, 1, new QTableWidgetItem(QString::number(lat, 'f', 6)));
     table->setItem(row, 2, new QTableWidgetItem(QString::number(lon, 'f', 6)));
     table->setItem(row, 3, new QTableWidgetItem(QString::number(alt, 'f', 2)));
+    table->blockSignals(false);
 
     // Automatically redraw
     drawMission(drone_id);
